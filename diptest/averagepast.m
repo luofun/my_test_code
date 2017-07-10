@@ -1,0 +1,10 @@
+clear;
+clc;
+test=imread('Moon.bmp');
+out=test;
+out(:,:,1)=filter2(fspecial('average',3),test(:,:,1));
+out(:,:,2)=filter2(fspecial('average',3),test(:,:,2));
+out(:,:,3)=filter2(fspecial('average',3),test(:,:,3));
+imshow(out);
+imwrite(out,'averagepast.bmp');
+clear;
