@@ -3330,14 +3330,827 @@ int findPairs(vector<int>& nums, int k) {
 	return count;
 }
 
+/*
+
+Given a 2D integer matrix M representing the gray scale of an image, you need to design a smoother to make the gray scale of each cell becomes the average gray scale (rounding down) of all the 8 surrounding cells and itself. If a cell has less than 8 surrounding cells, then use as many as you can.
+
+*/
+vector<vector<int>> imageSmoother(vector<vector<int>>& M) {
+	/*<vector<int>> B = M;
+	for (int i = 0; i < M.size(); i++)
+	{
+	for (int j = 0; j < M[i].size(); j++)
+	{
+	if (i == 0 && j == 0)
+	{
+	B[i][j] = M[i][j] + M[i + 1][j + 1] + M[i + 1][j] + M[i][j + 1];
+	B[i][j] /= 4;
+	continue;//d4
+	}
+	if (i == M.size() - 1&& j == M[i].size() - 1)
+	{
+	B[i][j] = M[i][j] + M[i - 1][j - 1] + M[i - 1][j] + M[i][j - 1];
+	B[i][j] /= 4;
+	continue;//d4
+	}
+	if (i == 0 && j == M[i].size() - 1)
+	{
+	B[i][j] = M[i][j] + M[i + 1][j - 1] + M[i + 1][j] + M[i][j - 1];
+	B[i][j] /= 4;
+	continue;//d4
+	}
+	if (i == M.size() - 1 && j == 0)
+	{
+	B[i][j] = M[i][j] + M[i - 1][j + 1] + M[i - 1][j] + M[i][j + 1];
+	B[i][j] /= 4;
+	continue;//d4
+	}
+	if (i == 0)
+	{
+	B[i][j] = M[i][j] + M[i + 1][j] + M[i + 1][j + 1] + M[i][j - 1] + M[i][j + 1] + M[i + 1][j - 1];
+	B[i][j] /= 6;
+	continue;//d6
+	}
+	if (i == M.size() - 1)
+	{
+	B[i][j] = M[i][j] + M[i - 1][j] + M[i - 1][j + 1] + M[i][j - 1] + M[i][j - 1] + M[i - 1][j - 1];
+	B[i][j] /= 6;
+	continue;//d6
+	}
+	if (j==0)
+	{
+	B[i][j] = M[i][j] + M[i][j + 1] + M[i - 1][j] + M[i + 1][j] + M[i + 1][j + 1] + M[i - 1][j + 1];
+	B[i][j] /= 6;
+	continue;//d6
+	}
+	if (j == M[i].size() - 1)
+	{
+	B[i][j] = M[i][j] + M[i][j - 1] + M[i - 1][j] + M[i + 1][j] + M[i + 1][j - 1] + M[i - 1][j - 1];
+	B[i][j] /= 6;
+	continue;//d6
+	}
+	//others d9
+	B[i][j] = M[i][j] + M[i - 1][j] + M[i + 1][j] + M[i][j - 1] + M[i][j + 1] + M[i - 1][j - 1] + M[i + 1][j + 1] + M[i + 1][j - 1] + M[i - 1][j + 1];
+	B[i][j] /= 9;
+	}
+	}
+	return B;*/
+	int m = M.size(), n = M[0].size();
+	if (m == 0 || n == 0) return{ {} };
+	vector<vector<int>> dirs = { { 0, 1 }, { 0, -1 }, { 1, 0 }, { -1, 0 }, { -1, -1 }, { 1, 1 }, { -1, 1 }, { 1, -1 } };
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < n; j++) {
+			int sum = M[i][j], cnt = 1;
+			for (int k = 0; k < dirs.size(); k++) {
+				int x = i + dirs[k][0], y = j + dirs[k][1];
+				if (x < 0 || x > m - 1 || y < 0 || y > n - 1) continue;
+				sum += (M[x][y] & 0xFF);
+				cnt++;
+			}
+			M[i][j] |= ((sum / cnt) << 8);
+		}
+	}
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < n; j++) {
+			M[i][j] >>= 8;
+		}
+	}
+	return M;
+}
+
+class Employee {
+public:
+	// It's the unique ID of each node.
+	// unique id of this employee
+	int id;
+	// the importance value of this employee
+	int importance;
+	// the id of direct subordinates
+	vector<int> subordinates;
+};
+/*
+
+You are given a data structure of employee information, which includes the employee's unique id, his importance value and his direct subordinates' id.
+
+For example, employee 1 is the leader of employee 2, and employee 2 is the leader of employee 3. They have importance value 15, 10 and 5, respectively. Then employee 1 has a data structure like [1, 15, [2]], and employee 2 has [2, 10, [3]], and employee 3 has [3, 5, []]. Note that although employee 3 is also a subordinate of employee 1, the relationship is not direct.
+
+Now given the employee information of a company, and an employee id, you need to return the total importance value of this employee and all his subordinates.
+
+*/
+int getImportance(vector<Employee*> employees, int id) {
+	map<int, Employee> mmm;
+	for (int i = 0; i < employees.size(); i++)
+		mmm[employees[i]->id] = *employees[i];
+	int sum = 0;
+	queue<Employee> vvv;
+	vvv.push(mmm[id]);
+	while (!vvv.empty())
+	{
+		sum += vvv.front().importance;
+		if (!vvv.front().subordinates.empty())
+			for (int i = 0; i < vvv.front().subordinates.size(); i++)
+				vvv.push(mmm[vvv.front().subordinates[i]]);
+		vvv.pop();
+	}
+	return sum;
+}
+
+/*
+
+Given a list of strings words representing an English Dictionary, find the longest word in words that can be built one character at a time by other words in words. If there is more than one possible answer, return the longest word with the smallest lexicographical order.
+
+If there is no answer, return the empty string.
+
+*/
+string longestWord(vector<string>& words) {
+	sort(words.begin(), words.end());
+	unordered_set<string> built;
+	string res;
+	for (string w : words) {
+		if (w.size() == 1 || built.count(w.substr(0, w.size() - 1))) {
+			res = w.size() > res.size() ? w : res;
+			built.insert(w);
+		}
+	}
+	return res;
+}
+
+/*
+
+We have two special characters. The first character can be represented by one bit 0. The second character can be represented by two bits (10 or 11).
+
+Now given a string represented by several bits. Return whether the last character must be a one-bit character or not. The given string will always end with a zero.
+
+*/
+bool isOneBitCharacter(vector<int>& bits) {
+	int i = 0;
+	while (i < bits.size() - 1) {
+		i += bits[i] + 1;
+	}
+	return i == bits.size() - 1;
+}
+
+/*
+
+Given a non-empty array of non-negative integers nums, the degree of this array is defined as the maximum frequency of any one of its elements.
+
+Your task is to find the smallest possible length of a (contiguous) subarray of nums, that has the same degree as nums.
+
+*/
+int findShortestSubArray(vector<int>& nums) {
+	map<int, int> mmm;
+	for (int i = 0; i < nums.size(); i++)
+		mmm[nums[i]]++;
+	int dmax = 0;
+	for (auto i = mmm.begin(); i != mmm.end(); i++)
+		dmax = max(dmax, (*i).second);
+	int count = INT_MAX;
+	for (auto i = mmm.begin(); i != mmm.end(); i++)
+	{
+		if ((*i).second == dmax)
+		{
+			int j = 0;
+			while (nums[j] != (*i).first)
+				j++;
+			int ccc = 0;
+			int tempconut = 0;
+			for (; j < nums.size(); j++)
+			{
+				if (nums[j] == (*i).first)
+					ccc++;
+				tempconut++;
+				if (ccc == (*i).second)
+					break;
+			}
+			count = min(count, tempconut);
+		}
+	}
+	return count;
+}
+
+/*
+
+Give a string s, count the number of non-empty (contiguous) substrings that have the same number of 0's and 1's, and all the 0's and all the 1's in these substrings are grouped consecutively.
+
+Substrings that occur multiple times are counted the number of times they occur.
+
+*/
+int countBinarySubstrings(string s) {
+	int* groups = new int[s.length()];
+	int t = 0;
+	groups[0] = 1;
+	for (int i = 1; i < s.length(); i++) {
+		if (s[i - 1] != s[i]) {
+			groups[++t] = 1;
+		}
+		else {
+			groups[t]++;
+		}
+	}
+	int ans = 0;
+	for (int i = 1; i <= t; i++) {
+		ans += min(groups[i - 1], groups[i]);
+	}
+	return ans;
+}
+
+/*
+
+Given a non-empty 2D array grid of 0's and 1's, an island is a group of 1's (representing land) connected 4-directionally (horizontal or vertical.) You may assume all four edges of the grid are surrounded by water.
+
+Find the maximum area of an island in the given 2D array. (If there is no island, the maximum area is 0.)
+
+*/
+int maxAreaOfIsland(vector<vector<int>>& grid) {
+	int maxa = 0;
+	queue<pair<int, int>> qqq;
+	map<pair<int, int>, int> mmm;
+	for (int i = 0; i < grid.size(); i++)
+	{
+		for (int j = 0; j < grid[i].size(); j++)
+		{
+			if (!mmm.count({ i, j }) && grid[i][j] == 1)
+			{
+				mmm.erase(mmm.begin(), mmm.end());
+				qqq.push({ i, j });
+				mmm[{i, j}]++;
+				int am = 0;
+				int x = -1;
+				int y = -1;
+				while (!qqq.empty())
+				{
+					am++;
+					x = qqq.front().first;
+					y = qqq.front().second;
+					if (x > 0 && grid[x - 1][y] == 1 && !mmm.count({ x - 1, y }))
+					{
+						qqq.push({ x - 1, y });
+						mmm[{x - 1, y}]++;
+					}
+					if (x < grid.size() - 1 && grid[x + 1][y] == 1 && !mmm.count({ x + 1, y }))
+					{
+						qqq.push({ x + 1, y });
+						mmm[{x + 1, y}]++;
+					}
+					if (y > 0 && grid[x][y - 1] == 1 && !mmm.count({ x, y - 1 }))
+					{
+						qqq.push({ x, y - 1 });
+						mmm[{x, y - 1}]++;
+					}
+					if (y < grid[x].size() - 1 && grid[x][y + 1] == 1 && !mmm.count({ x, y + 1 }))
+					{
+						qqq.push({ x, y + 1 });
+						mmm[{x, y + 1}]++;
+					}
+					qqq.pop();
+				}
+				maxa = max(maxa, am);
+			}
+		}
+	}
+	return maxa;
+}
+
+/*
+
+Given a positive integer, check whether it has alternating bits: namely, if two adjacent bits will always have different values.
+
+*/
+bool hasAlternatingBits(int n) {
+	return !((n ^= n / 2) & n + 1);
+}
+
+/*
+
+Given an array of integers nums, write a method that returns the "pivot" index of this array.
+
+We define the pivot index as the index where the sum of the numbers to the left of the index is equal to the sum of the numbers to the right of the index.
+
+If no such index exists, we should return -1. If there are multiple pivot indexes, you should return the left-most pivot index.
+
+*/
+int pivotIndex(vector<int>& nums) {
+	if (nums.size() < 3)
+		return -1;
+	int sumtotal = 0;
+	for (int i = 0; i < nums.size(); i++)
+		sumtotal += nums[i];
+	int sum1 = 0;
+	int sum2 = sumtotal;
+	int x;
+	for (x = 0; x < nums.size(); x++)
+	{
+		sum2 -= nums[x];
+		sum1 = sumtotal - nums[x] - sum2;
+		if (sum1 == sum2)
+			return x;
+	}
+	return -1;
+}
+
+int ans;
+int arrowLength(TreeNode* node) {
+	if (node == NULL) return 0;
+	int left = arrowLength(node->left);
+	int right = arrowLength(node->right);
+	int arrowLeft = 0, arrowRight = 0;
+	if (node->left != NULL && node->left->val == node->val) {
+		arrowLeft += left + 1;
+	}
+	if (node->right != NULL && node->right->val == node->val) {
+		arrowRight += right + 1;
+	}
+	ans = max(ans, arrowLeft + arrowRight);
+	return max(arrowLeft, arrowRight);
+}
+/*
+
+Given a binary tree, find the length of the longest path where each node in the path has the same value. This path may or may not pass through the root.
+
+*/
+int longestUnivaluePath(TreeNode* root) {
+	ans = 0;
+	arrowLength(root);
+	return ans;
+}
+
+/*
+
+Given two strings A and B, find the minimum number of times A has to be repeated such that B is a substring of it. If no such solution, return -1.
+
+For example, with A = "abcd" and B = "cdabcdab".
+
+Return 3, because by repeating A three times (“abcdabcdabcd”), B is a substring of it; and B is not a substring of A repeated two times ("abcdabcd").
+
+*/
+int repeatedStringMatch(string A, string B) {
+	vector<int> prefTable(B.size() + 1); // 1-based to avoid extra checks.
+	for (auto sp = 1, pp = 0; sp < B.size(); prefTable[++sp] = pp) {
+		pp = B[pp] == B[sp] ? pp + 1 : prefTable[pp];
+	}
+	for (auto i = 0, j = 0; i < A.size(); i += max(1, j - prefTable[j]), j = prefTable[j]) {
+		while (j < B.size() && A[(i + j) % A.size()] == B[j]) ++j;
+		if (j == B.size()) return (i + j) / A.size() + ((i + j) % A.size() != 0 ? 1 : 0);
+	}
+	return -1;
+}
+
+/*
+
+Given an array with n integers, your task is to check if it could become non-decreasing by modifying at most 1 element.
+
+We define an array is non-decreasing if array[i] <= array[i + 1] holds for every i (1 <= i < n).
+
+*/
+bool checkPossibility(vector<int>& nums) {
+	int cnt = 0;
+	for (int i = 1; i < nums.size() && cnt <= 1; i++) {
+		if (nums[i - 1] > nums[i]) {
+			cnt++;
+			if (i - 2<0 || nums[i - 2] <= nums[i])
+				nums[i - 1] = nums[i];
+			else nums[i] = nums[i - 1];
+		}
+	}
+	return cnt <= 1;
+}
+
+int minval(TreeNode* p, int first) {
+	if (p == nullptr) return -1;
+	if (p->val != first) return p->val;
+	int left = minval(p->left, first), right = minval(p->right, first);
+	// if all nodes of a subtree = root->val, 
+	// there is no second minimum value, return -1
+	if (left == -1) return right;
+	if (right == -1) return left;
+	return min(left, right);
+}
+/*
+
+Given a non-empty special binary tree consisting of nodes with the non-negative value, where each node in this tree has exactly two or zero sub-node. If the node has two sub-nodes, then this node's value is the smaller value among its two sub-nodes.
+
+Given such a binary tree, you need to output the second minimum value in the set made of all the nodes' value in the whole tree.
+
+If no such second minimum value exists, output -1 instead.
+
+*/
+int findSecondMinimumValue(TreeNode* root) {
+	if (!root) return -1;
+	int ans = minval(root, root->val);
+	return ans;
+}
+
+/*
+
+Given an unsorted array of integers, find the length of longest continuous increasing subsequence.
+
+*/
+int findLengthOfLCIS(vector<int>& nums) {
+	int res = 0, cnt = 0;
+	for (int i = 0; i < nums.size(); i++) {
+		if (i == 0 || nums[i - 1] < nums[i]) res = max(res, ++cnt);
+		else cnt = 1;
+	}
+	return res;
+}
+
+bool isPalindromic(string s, int l, int r) {
+	while (++l < --r)
+		if (s[l] != s[r]) return false;
+	return true;
+}
+/*
+
+Given a non-empty string s, you may delete at most one character. Judge whether you can make it a palindrome.
+
+*/
+bool validPalindrome(string s) {
+	int l = -1, r = s.length();
+	while (++l < --r)
+		if (s[l] != s[r]) return isPalindromic(s, l, r + 1) || isPalindromic(s, l - 1, r);
+	return true;
+}
+
+bool equals(TreeNode* x, TreeNode* y)
+{
+	if (x == NULL && y == NULL)
+		return true;
+	if (x == NULL || y == NULL)
+		return false;
+	return x->val == y->val && equals(x->left, y->left) && equals(x->right, y->right);
+}
+bool traverse(TreeNode* s, TreeNode* t)
+{
+	return  s != NULL && (equals(s, t) || traverse(s->left, t) || traverse(s->right, t));
+}
+/*
+
+Given two non-empty binary trees s and t, check whether tree t has exactly the same structure and node values with a subtree of s. A subtree of s is a tree consists of a node in s and all of this node's descendants. The tree s could also be considered as a subtree of itself.
+
+*/
+bool isSubtree(TreeNode* s, TreeNode* t) {
+	return traverse(s, t);
+}
+
+/*
+
+Given an integer array, you need to find one continuous subarray that if you only sort this subarray in ascending order, then the whole array will be sorted in ascending order, too.
+
+You need to find the shortest such subarray and output its length.
+
+*/
+int findUnsortedSubarray(vector<int>& nums) {
+	int minn = INT_MAX, maxn = INT_MIN;
+	bool flag = false;
+	for (int i = 1; i < nums.size(); i++) {
+		if (nums[i] < nums[i - 1])
+			flag = true;
+		if (flag)
+			minn = min(minn, nums[i]);
+	}
+	flag = false;
+	for (int i = nums.size() - 2; i >= 0; i--) {
+		if (nums[i] > nums[i + 1])
+			flag = true;
+		if (flag)
+			maxn = max(maxn, nums[i]);
+	}
+	int l, r;
+	for (l = 0; l < nums.size(); l++) {
+		if (minn < nums[l])
+			break;
+	}
+	for (r = nums.size() - 1; r >= 0; r--) {
+		if (maxn > nums[r])
+			break;
+	}
+	return r - l < 0 ? 0 : r - l + 1;
+}
+
+/*
+
+We define a harmonious array is an array where the difference between its maximum value and its minimum value is exactly 1.
+
+Now, given an integer array, you need to find the length of its longest harmonious subsequence among all its possible subsequences.
+
+*/
+int findLHS(vector<int>& nums) {
+	map<int, int> mmm;
+	int back = 0;
+	for (int i = 0; i < nums.size(); i++)
+		mmm[nums[i]]++;
+	for (auto a = mmm.begin(); a != mmm.end(); a++)
+		if (mmm.count((*a).first + 1))
+			back = max(back, (*a).second + mmm[(*a).first + 1]);
+	return back;
+}
+
+string tb;
+/*
+
+You need to construct a string consists of parenthesis and integers from a binary tree with the preorder traversing way.
+
+The null node needs to be represented by empty parenthesis pair "()". And you need to omit all the empty parenthesis pairs that don't affect the one-to-one mapping relationship between the string and the original binary tree.
+
+*/
+string tree2str(TreeNode* t) {
+	if (t == NULL)
+		return "";
+	stack<TreeNode*> stack;
+	stack.push(t);
+	unordered_set<TreeNode*> visited;
+	string s;
+	while (!stack.empty()) {
+		t = stack.top();
+		if (visited.count(t)) {
+			stack.pop();
+			s.append(")");
+		}
+		else {
+			visited.insert(t);
+			s.append("(" + to_string(t->val));
+			if (t->left == NULL && t->right != NULL)
+				s.append("()");
+			if (t->right != NULL)
+				stack.push(t->right);
+			if (t->left != NULL)
+				stack.push(t->left);
+		}
+	}
+	return s.substr(1, s.length() - 2);
+}
+
+/*
+
+You need to construct a string consists of parenthesis and integers from a binary tree with the preorder traversing way.
+
+The null node needs to be represented by empty parenthesis pair "()". And you need to omit all the empty parenthesis pairs that don't affect the one-to-one mapping relationship between the string and the original binary tree.
+
+*/
+string tree2str2(TreeNode* t) {
+	if (t == NULL)
+		return "";
+	stack<TreeNode*> stack;
+	stack.push(t);
+	unordered_set<TreeNode*> visited;
+	string s;
+	while (!stack.empty()) {
+		t = stack.top();
+		if (visited.count(t)) {
+			stack.pop();
+			s.append(")");
+		}
+		else {
+			visited.insert(t);
+			s.append("(" + to_string(t->val));
+			if (t->left == NULL && t->right != NULL)
+				s.append("()");
+			if (t->right != NULL)
+				stack.push(t->right);
+			if (t->left != NULL)
+				stack.push(t->left);
+		}
+	}
+	return s.substr(1, s.length() - 2);
+}
+
+vector<int> vvvi;
+void findtargetson(TreeNode* root) {
+	if (root == NULL)
+		return;
+	vvvi.push_back(root->val);
+	findtargetson(root->left);
+	findtargetson(root->right);
+}
+/*
+
+Given a Binary Search Tree and a target number, return true if there exist two elements in the BST such that their sum is equal to the given target.
+
+*/
+bool findTarget(TreeNode* root, int k) {
+	findtargetson(root);
+	for (int i = 0; i < vvvi.size() - 1; i++)
+	{
+		for (int j = i + 1; j < vvvi.size(); j++)
+		{
+			if (vvvi[i] + vvvi[j] == k)
+				return true;
+		}
+	}
+	return false;
+}
+
+/*
+
+The set S originally contains numbers from 1 to n. But unfortunately, due to the data error, one of the numbers in the set got duplicated to another number in the set, which results in repetition of one number and loss of another number.
+
+Given an array nums representing the data status of this set after the error. Your task is to firstly find the number occurs twice and then find the number that is missing. Return them in the form of an array.
+
+*/
+vector<int> findErrorNums(vector<int>& nums) {
+	map<int, int> mmm;
+	int dup = -1, missing = 1;
+	for (int n : nums) {
+		mmm[n]++;
+	}
+	for (int i = 1; i <= nums.size(); i++) {
+		if (mmm.count(i)) {
+			if (mmm[i] == 2)
+				dup = i;
+		}
+		else
+			missing = i;
+	}
+	return vector<int>{dup, missing};
+}
+
+/*
+
+Given an array consisting of n integers, find the contiguous subarray of given length k that has the maximum average value. And you need to output the maximum average value.
+
+*/
+double findMaxAverage(vector<int>& nums, int k) {
+	double back = INT_MIN;
+	for (int i = 0; i < nums.size() - k + 1; i++)
+	{
+		double sum = 0;
+		for (int j = i; j < i + k; j++)
+		{
+			sum += nums[j];
+		}
+		back = max(back, sum / k);
+	}
+	return back;
+}
+
+/*
+
+Given a non-empty binary tree, return the average value of the nodes on each level in the form of an array.
+
+*/
+vector<double> averageOfLevels(TreeNode* root) {
+	if (root == NULL)
+		return vector<double>{};
+	queue<TreeNode*> qqq;
+	vector<double> back;
+	int thisround = 1;
+	int nextround = 0;
+	qqq.push(root);
+	while (!qqq.empty())
+	{
+		double tempsum = 0;
+		for (int i = 0; i < thisround; i++)
+		{
+			TreeNode* tempt;
+			tempt = qqq.front();
+			if (tempt->left != NULL)
+			{
+				qqq.push(tempt->left);
+				nextround++;
+			}
+			if (tempt->right != NULL)
+			{
+				qqq.push(tempt->right);
+				nextround++;
+			}
+			tempsum += tempt->val;
+			qqq.pop();
+
+		}
+		back.push_back(tempsum / thisround);
+		thisround = nextround;
+		nextround = 0;
+	}
+	return back;
+}
+
+/*
+
+Given a non-negative integer c, your task is to decide whether there're two integers a and b such that a2 + b2 = c.
+
+*/
+bool judgeSquareSum(int c) {
+	for (long a = 0; a * a <= c; a++) {
+		double b = sqrt(c - a * a);
+		if (b == (int)b)
+			return true;
+	}
+	return false;
+}
+
+/*
+
+Given an integer array, find three numbers whose product is maximum and output the maximum product.
+
+*/
+int maximumProduct(vector<int>& nums) {
+	sort(nums.begin(), nums.end());
+	int n = nums.size();
+	int temp1 = nums[n - 1] * nums[n - 2] * nums[n - 3];
+	int temp2 = nums[0] * nums[1] * nums[n - 1];
+	return temp1>temp2 ? temp1 : temp2;
+}
+
+/*
+
+Suppose you have a long flowerbed in which some of the plots are planted and some are not. However, flowers cannot be planted in adjacent plots - they would compete for water and both would die.
+
+Given a flowerbed (represented as an array containing 0 and 1, where 0 means empty and 1 means not empty), and a number n, return if n new flowers can be planted in it without violating the no-adjacent-flowers rule.
+
+*/
+bool canPlaceFlowers(vector<int>& flowerbed, int n) {
+	int templen;
+	int count = 0;
+	if (flowerbed[0] == 1)
+		templen = 0;
+	else
+		templen = 1;
+	for (int i = 0; i < flowerbed.size(); i++)
+	{
+		if (flowerbed[i] == 1)
+		{
+			count += (int)(((float)(templen - 2)) / 2 + 0.5);
+			templen = 0;
+			continue;
+		}
+		templen++;
+		if (i == flowerbed.size() - 1)
+			count += (int)(((float)(templen - 1)) / 2 + 0.5);
+	}
+
+	if (count >= n)
+		return true;
+	return false;
+}
+
+/*
+
+Suppose Andy and Doris want to choose a restaurant for dinner, and they both have a list of favorite restaurants represented by strings.
+
+You need to help them find out their common interest with the least list index sum. If there is a choice tie between answers, output all of them with no order requirement. You could assume there always exists an answer.
+
+*/
+vector<string> findRestaurant(vector<string>& list1, vector<string>& list2) {
+	vector<string> back;
+	int sumnow = INT_MAX;
+	for (int i = 0; i < list1.size(); i++)
+	{
+		for (int j = 0; j < list2.size(); j++)
+		{
+			if (list1[i] == list2[j])
+			{
+				if (i + j == sumnow)
+					back.push_back(list2[j]);
+				if (i + j < sumnow)
+				{
+					back.erase(back.begin(), back.end());
+					back.push_back(list2[j]);
+					sumnow = i + j;
+				}
+			}
+		}
+	}
+	return back;
+}
+
+/*
+
+Given an m * n matrix M initialized with all 0's and several update operations.
+
+Operations are represented by a 2D array, and each operation is represented by an array with two positive integers a and b, which means M[i][j] should be added by one for all 0 <= i < a and 0 <= j < b.
+
+*/
+int maxCount(int m, int n, vector<vector<int>>& ops) {
+	for (int i = 0; i < ops.size(); ++i) {
+		m = min(m, ops[i][0]);
+		n = min(n, ops[i][1]);
+	}
+	return m*n;
+}
+
+/*
+
+
+
+*/
+
+
+
+
+
+
+
+
+
 
 
 
 
 int main()
 {
-	vector<int> xxx = { };
-	cout << findPairs(xxx, 2);
+	vector<string> xxx1 = { "Shogun", "Tapioca Express", "Burger King", "KFC"};
+	vector<string> xxx2 = { "KFC", "Shogun", "Burger King" };
+	findRestaurant(xxx1, xxx2);
     return 0;
 }
 
