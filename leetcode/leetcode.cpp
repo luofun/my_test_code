@@ -4,7 +4,6 @@
 #include<iterator>
 #include<iostream>
 #include<string>
-#include <limits.h>
 #include <sstream>
 #include <map>
 #include <functional>
@@ -17,6 +16,14 @@
 #include<unordered_set>
 #include<queue>
 #include<unordered_map>
+
+/*
+static string s = []() {
+std::ios::sync_with_stdio(false);
+cin.tie(NULL);
+return "";
+}();
+*///for speed up the string io
 
 using namespace std;
 
@@ -4130,9 +4137,925 @@ int maxCount(int m, int n, vector<vector<int>>& ops) {
 
 /*
 
+A self-dividing number is a number that is divisible by every digit it contains.
 
+For example, 128 is a self-dividing number because 128 % 1 == 0, 128 % 2 == 0, and 128 % 8 == 0.
+
+Also, a self-dividing number is not allowed to contain the digit zero.
+
+Given a lower and upper number bound, output a list of every possible self dividing number, including the bounds if possible.
 
 */
+vector<int> selfDividingNumbers(int left, int right) {
+	vector<int> back;
+	for (int i = left; i <= right; i++)
+	{
+		int j = i;
+		bool jumpflag = false;
+		while (j > 0)
+		{
+			int res = j % 10;
+			if (res == 0)
+			{
+				jumpflag = true;
+				break;
+			}
+			if (i%res != 0)
+			{
+				jumpflag = true;
+				break;
+			}
+			j /= 10;
+		}
+		if (jumpflag == false)
+			back.push_back(i);
+	}
+	return back;
+}
+
+/*
+
+Implement a MyCalendarTwo class to store your events. A new event can be added if adding the event will not cause a triple booking.
+
+Your class will have one method, book(int start, int end). Formally, this represents a booking on the half open interval [start, end), the range of real numbers x such that start <= x < end.
+
+A triple booking happens when three events have some non-empty intersection (ie., there is some time that is common to all 3 events.)
+
+For each call to the method MyCalendar.book, return true if the event can be added to the calendar successfully without causing a triple booking. Otherwise, return false and do not add the event to the calendar.
+
+Your class will be called like this: MyCalendar cal = new MyCalendar(); MyCalendar.book(start, end)
+
+*/
+class MyCalendarTwo {
+public:
+	map<int, int> delta;
+
+	bool book(int start, int end) {
+		delta[start]++;
+		delta[end]--;
+		int booked = 0;
+		for (auto &d : delta) {
+			booked += d.second;
+			if (booked == 3) {
+				delta[start]--;
+				delta[end]++;
+				return false;
+			}
+		}
+		return true;
+	}
+};
+
+void solveNQueens(vector<vector<string> > &res, vector<string> &nQueens, vector<int> &flag_col, vector<int> &flag_45, vector<int> &flag_135, int row, int &n) {
+	if (row == n) {
+		res.push_back(nQueens);
+		return;
+	}
+	for (int col = 0; col != n; ++col)
+		if (flag_col[col] && flag_45[row + col] && flag_135[n - 1 + col - row]) {
+			flag_col[col] = flag_45[row + col] = flag_135[n - 1 + col - row] = 0;
+			nQueens[row][col] = 'Q';
+			solveNQueens(res, nQueens, flag_col, flag_45, flag_135, row + 1, n);
+			nQueens[row][col] = '.';
+			flag_col[col] = flag_45[row + col] = flag_135[n - 1 + col - row] = 1;
+		}
+}
+/*
+
+The n-queens puzzle is the problem of placing n queens on an n×n chessboard such that no two queens attack each other.
+
+*/
+vector<vector<string>> solveNQueens(int n) {
+	vector<vector<string> > res;
+	vector<string> nQueens(n, string(n, '.'));
+	vector<int> flag_col(n, 1), flag_45(2 * n - 1, 1), flag_135(2 * n - 1, 1);
+	solveNQueens(res, nQueens, flag_col, flag_45, flag_135, 0, n);
+	return res;
+}
+
+void dfs(int i, int &rowsize, vector<int> &col, vector<int>& main, vector<int> &anti, int &count) {
+	if (i == rowsize) {
+		count++;
+		return;
+	}
+	for (int j = 0; j < col.size(); j++) {
+		if (col[j] && main[i + j] && anti[i + col.size() - 1 - j]) {
+			col[j] = main[i + j] = anti[i + col.size() - 1 - j] = 0;
+			dfs(i + 1, rowsize, col, main, anti, count);
+			col[j] = main[i + j] = anti[i + col.size() - 1 - j] = 1;
+		}
+	}
+}
+/*
+
+Follow up for N-Queens problem.
+
+Now, instead outputting board configurations, return the total number of distinct solutions.
+
+*/
+int totalNQueens(int n) {
+	vector<int> col(n, 1);
+	vector<int> anti(2 * n - 1, 1);
+	vector<int> main(2 * n - 1, 1);
+	int count = 0;
+	dfs(0, n, col, main, anti, count);
+	return count;
+}
+
+/*
+
+Given a string, find the length of the longest substring without repeating characters.
+
+*/
+int lengthOfLongestSubstring(string s) {
+	map<char, int> mmm;
+	int len = 0;
+	int maxlen = 0;
+	for (int i = 0; i < s.length(); i++)
+	{
+		if (!mmm.count(s[i]))
+		{
+			mmm[s[i]] = i;
+			len++;
+		}
+		else
+		{
+			for (auto a = mmm.begin(); a != mmm.end();)
+			{
+				if ((*a).second < mmm[s[i]])
+				{
+					a = mmm.erase(a);
+					continue;
+				}
+				a++;
+			}
+			mmm[s[i]] = i;
+			len = mmm.size();
+		}
+		maxlen = max(maxlen, len);
+	}
+	return maxlen;
+}
+
+string preProcess(string s) {
+	int n = s.length();
+	if (n == 0) return "^$";
+	string ret = "^";
+	for (int i = 0; i < n; i++)
+		ret += "#" + s.substr(i, 1);
+
+	ret += "#$";
+	return ret;
+}
+/*
+
+Given a string s, find the longest palindromic substring in s. You may assume that the maximum length of s is 1000.
+
+*/
+string longestPalindrome2(string s) {
+	string T = preProcess(s);
+	int n = T.length();
+	int *P = new int[n];
+	int C = 0, R = 0;
+	for (int i = 1; i < n - 1; i++) {
+		int i_mirror = 2 * C - i; // equals to i' = C - (i-C)
+
+		P[i] = (R > i) ? min(R - i, P[i_mirror]) : 0;
+
+		// Attempt to expand palindrome centered at i
+		while (T[i + 1 + P[i]] == T[i - 1 - P[i]])
+			P[i]++;
+
+		// If palindrome centered at i expand past R,
+		// adjust center based on expanded palindrome.
+		if (i + P[i] > R) {
+			C = i;
+			R = i + P[i];
+		}
+	}
+
+	// Find the maximum element in P.
+	int maxLen = 0;
+	int centerIndex = 0;
+	for (int i = 1; i < n - 1; i++) {
+		if (P[i] > maxLen) {
+			maxLen = P[i];
+			centerIndex = i;
+		}
+	}
+	delete[] P;
+
+	return s.substr((centerIndex - 1 - maxLen) / 2, maxLen);
+}
+
+/*
+
+There are two sorted arrays nums1 and nums2 of size m and n respectively.
+
+Find the median of the two sorted arrays. The overall run time complexity should be O(log (m+n)).
+
+*/
+double findMedianSortedArrays(vector<int>& nums1, vector<int>& nums2) {
+	int N1 = nums1.size();
+	int N2 = nums2.size();
+	if (N1 < N2) return findMedianSortedArrays(nums2, nums1);	// Make sure A2 is the shorter one.
+
+	int lo = 0, hi = N2 * 2;
+	while (lo <= hi) {
+		int mid2 = (lo + hi) / 2;   // Try Cut 2 
+		int mid1 = N1 + N2 - mid2;  // Calculate Cut 1 accordingly
+
+		double L1 = (mid1 == 0) ? INT_MIN : nums1[(mid1 - 1) / 2];	// Get L1, R1, L2, R2 respectively
+		double L2 = (mid2 == 0) ? INT_MIN : nums2[(mid2 - 1) / 2];
+		double R1 = (mid1 == N1 * 2) ? INT_MAX : nums1[(mid1) / 2];
+		double R2 = (mid2 == N2 * 2) ? INT_MAX : nums2[(mid2) / 2];
+
+		if (L1 > R2) lo = mid2 + 1;		// A1's lower half is too big; need to move C1 left (C2 right)
+		else if (L2 > R1) hi = mid2 - 1;	// A2's lower half too big; need to move C2 left.
+		else return (max(L1, L2) + min(R1, R2)) / 2;	// Otherwise, that's the right cut.
+	}
+	return -1;
+}
+
+/*
+
+Implement atoi to convert a string to an integer.
+
+*/
+int myAtoi(string str) {
+	long result = 0;
+	int indicator = 1;
+	for (int i = 0; i<str.size();)
+	{
+		i = str.find_first_not_of(' ');
+		if (str[i] == '-' || str[i] == '+')
+			indicator = (str[i++] == '-') ? -1 : 1;
+		while ('0' <= str[i] && str[i] <= '9')
+		{
+			result = result * 10 + (str[i++] - '0');
+			if (result*indicator >= INT_MAX) return INT_MAX;
+			if (result*indicator <= INT_MIN) return INT_MIN;
+		}
+		return result*indicator;
+	}
+	return result*indicator;
+}
+
+/*
+
+The string "PAYPALISHIRING" is written in a zigzag pattern on a given number of rows like this: (you may want to display this pattern in a fixed font for better legibility)
+
+*/
+string convert(string s, int numRows) {
+	if (numRows == 1)
+		return s;
+	vector<string> ttt;
+	string back;
+	ttt.resize(numRows);
+	int count = 0;
+	for (int i = 0; i < s.length();)
+	{
+		if (count % (numRows - 1) == 0)
+		{
+			int j;
+			for (j = i; j < s.length() && j < i + numRows; j++)
+			{
+				ttt[j - i].push_back(s[j]);
+			}
+			i = j;
+		}
+		else
+		{
+			ttt[numRows - (count % (numRows - 1)) - 1].push_back(s[i]);
+			i++;
+		}
+		count++;
+	}
+	for (int i = 0; i < ttt.size(); i++)
+		back += ttt[i];
+	return back;
+}
+
+/*
+
+Given n non-negative integers a1, a2, ..., an, where each represents a point at coordinate (i, ai). n vertical lines are drawn such that the two endpoints of line i is at (i, ai) and (i, 0). Find two lines, which together with x-axis forms a container, such that the container contains the most water.
+
+Note: You may not slant the container and n is at least 2.
+
+*/
+int maxArea(vector<int>& height) {
+	int maxarea = 0, l = 0, r = height.size() - 1;
+	while (l < r) {
+		maxarea = max(maxarea, min(height[l], height[r]) * (r - l));
+		if (height[l] < height[r])
+			l++;
+		else
+			r--;
+	}
+	return maxarea;
+}
+
+/*
+
+Implement regular expression matching with support for '.' and '*'.
+
+*/
+bool isMatch(string s, string p) {
+	int m = s.length(), n = p.length();
+	vector<vector<bool> > dp(m + 1, vector<bool>(n + 1, false));
+	dp[0][0] = true;
+	for (int i = 0; i <= m; i++)
+		for (int j = 1; j <= n; j++)
+			if (p[j - 1] == '*')
+				dp[i][j] = dp[i][j - 2] || (i > 0 && (s[i - 1] == p[j - 2] || p[j - 2] == '.') && dp[i - 1][j]);
+			else dp[i][j] = i > 0 && dp[i - 1][j - 1] && (s[i - 1] == p[j - 1] || p[j - 1] == '.');
+			return dp[m][n];
+}
+
+/*
+
+Merge k sorted linked lists and return it as one sorted list. Analyze and describe its complexity.
+
+*/
+ListNode* mergeKLists(vector<ListNode*>& lists) {
+	vector<int> vvv;
+	for (int i = 0; i < lists.size(); i++)
+	{
+		ListNode* listtemp = lists[i];
+		while (listtemp != NULL)
+		{
+			vvv.push_back(listtemp->val);
+			listtemp = listtemp->next;
+		}
+	}
+	if (vvv.size() == 0)
+		return NULL;
+	sort(vvv.begin(), vvv.end());
+	ListNode* usenext = new ListNode(vvv[0]);
+	ListNode* back = usenext;
+	for (int i = 1; i < vvv.size(); i++)
+	{
+		usenext->next = new ListNode(vvv[i]);
+		usenext = usenext->next;
+	}
+	return back;
+}
+
+/*
+
+Given a m x n grid filled with non-negative numbers, find a path from top left to bottom right which minimizes the sum of all numbers along its path.
+
+*/
+int minPathSum(vector<vector<int>>& grid) {
+	int m = grid.size();
+	int n = grid[0].size();
+	vector<vector<int> > sum(m, vector<int>(n, grid[0][0]));
+	for (int i = 1; i < m; i++)
+		sum[i][0] = sum[i - 1][0] + grid[i][0];
+	for (int j = 1; j < n; j++)
+		sum[0][j] = sum[0][j - 1] + grid[0][j];
+	for (int i = 1; i < m; i++)
+		for (int j = 1; j < n; j++)
+			sum[i][j] = min(sum[i - 1][j], sum[i][j - 1]) + grid[i][j];
+	return sum[m - 1][n - 1];
+}
+
+/*
+
+Implement pow(x, n).
+
+*/
+double myPow(double x, int n) {
+	/*
+	if (n == 0)
+		return 1;
+	if (n > 0)
+	{
+		double tempx = x;
+		for (int i = 1; i < n; i++)
+		{
+			x *= tempx;
+		}
+	}
+	if (n < 0)
+	{
+		double tempx = x;
+		for (int i = 0; i <= abs(n); i++)
+		{
+			x /= tempx;
+		}
+	}
+	return x;
+	*/
+	if (n == 0) return 1;
+	if (n == 1) return x;
+	if (n == -1) return 1 / x;
+	return myPow(x*x, n / 2)*(n % 2 == 0 ? 1 : n>0 ? x : 1 / x);
+}
+
+/*
+
+An image is represented by a 2-D array of integers, each integer representing the pixel value of the image (from 0 to 65535).
+
+Given a coordinate (sr, sc) representing the starting pixel (row and column) of the flood fill, and a pixel value newColor, "flood fill" the image.
+
+To perform a "flood fill", consider the starting pixel, plus any pixels connected 4-directionally to the starting pixel of the same color as the starting pixel, plus any pixels connected 4-directionally to those pixels (also with the same color as the starting pixel), and so on. Replace the color of all of the aforementioned pixels with the newColor.
+
+At the end, return the modified image.
+
+*/
+vector<vector<int>> floodFill(vector<vector<int>>& image, int sr, int sc, int newColor) {
+	vector<vector<int>> back = image;
+	queue<pair<int, int>> qqq;
+	map<pair<int, int>, bool> walksign;
+	qqq.push({ sr, sc });
+	while (!qqq.empty())
+	{
+		int x = qqq.front().first, y = qqq.front().second;
+		walksign[{x, y}] = 1;
+		back[x][y] = newColor;
+		if (x > 0 && image[x - 1][y] == image[sr][sc] && !walksign.count({ x - 1, y }))
+			qqq.push({ x - 1, y });
+		if (x < image.size() - 1 && image[x + 1][y] == image[sr][sc] && !walksign.count({ x + 1, y }))
+			qqq.push({ x + 1, y });
+		if (y > 0 && image[x][y - 1] == image[sr][sc] && !walksign.count({ x, y - 1 }))
+			qqq.push({ x, y - 1 });
+		if (y < image[0].size() - 1 && image[x][y + 1] == image[sr][sc] && !walksign.count({ x, y + 1 }))
+			qqq.push({ x, y + 1 });
+		qqq.pop();
+	}
+	return back;
+}
+
+/*
+
+Given two sentences words1, words2 (each represented as an array of strings), and a list of similar word pairs pairs, determine if two sentences are similar.
+
+For example, "great acting skills" and "fine drama talent" are similar, if the similar word pairs are pairs = [["great", "fine"], ["acting","drama"], ["skills","talent"]].
+
+Note that the similarity relation is not transitive. For example, if "great" and "fine" are similar, and "fine" and "good" are similar, "great" and "good" are not necessarily similar.
+
+However, similarity is symmetric. For example, "great" and "fine" being similar is the same as "fine" and "great" being similar.
+
+Also, a word is always similar with itself. For example, the sentences words1 = ["great"], words2 = ["great"], pairs = [] are similar, even though there are no specified similar word pairs.
+
+Finally, sentences can only be similar if they have the same number of words. So a sentence like words1 = ["great"] can never be similar to words2 = ["doubleplus","good"].
+
+*/
+bool areSentencesSimilar(vector<string>& words1, vector<string>& words2, vector<pair<string, string>> pairs) {
+	if (words1.size() != words2.size()) return false;
+	unordered_map<string, unordered_set<string>> dic;
+	for (int i = 0; i<pairs.size(); i++) {
+		if (dic.find(pairs[i].first) == dic.end()) 
+			dic[pairs[i].first] = unordered_set<string>{};
+		dic[pairs[i].first].insert(pairs[i].second);
+		if (dic.find(pairs[i].second) == dic.end()) 
+			dic[pairs[i].second] = unordered_set<string>{};
+		dic[pairs[i].second].insert(pairs[i].first);
+	}
+	for (int i = 0; i<words1.size(); i++) {
+		if (words1[i] == words2[i]) continue;
+		if (dic[words1[i]].find(words2[i]) == dic[words1[i]].end()) return false;
+	}
+	return true;
+}
+
+/*
+
+We are given an array asteroids of integers representing asteroids in a row.
+
+For each asteroid, the absolute value represents its size, and the sign represents its direction (positive meaning right, negative meaning left). Each asteroid moves at the same speed.
+
+Find out the state of the asteroids after all collisions. If two asteroids meet, the smaller one will explode. If both are the same size, both will explode. Two asteroids moving in the same direction will never meet.
+
+*/
+vector<int> asteroidCollision(vector<int>& asteroids) {
+	vector<int> s; // use vector to simulate stack.
+	for (int i = 0; i < asteroids.size(); i++) {
+		if (asteroids[i] > 0) // a[i] is positive star
+			s.push_back(asteroids[i]);
+		else if (s.empty() || s.back() < 0) // a[i] is negative star and there is no positive on stack
+			s.push_back(asteroids[i]); // negative star pass through
+		else if (s.back() <= -asteroids[i]) { // a[i] is negative star and stack top is positive star
+			if (s.back() < -asteroids[i]) i--; // only positive star on stack top get destroyed, stay on i to check more on stack.
+			s.pop_back(); // destroy positive star on the frontier;
+		} // else : positive on stack bigger, negative star destroyed.
+	}
+	return s;
+}
+
+//function to seperate each expression
+string parse(string &s, int &start) {
+	int end = start + 1, temp = start, count = 1;
+	if (s[start] == '(') {
+		while (count != 0) {
+			if (s[end] == '(')
+				count++;
+			else if (s[end] == ')')
+				count--;
+			end++;
+		}
+	}
+	else {
+		while (end < s.size() && s[end] != ' ')
+			end++;
+	}
+	start = end + 1;
+	return s.substr(temp, end - temp);
+}
+int help(string expression, unordered_map<string, int> myMap) {
+	if ((expression[0] == '-') || (expression[0] >= '0' && expression[0] <= '9'))
+		return stoi(expression);
+	else if (expression[0] != '(')
+		return myMap[expression];
+	//to get rid of the first '(' and the last ')'
+	string s = expression.substr(1, expression.size() - 2);
+	int start = 0;
+	string word = parse(s, start);
+	if (word == "let") {
+		while (true) {
+			string variable = parse(s, start);
+			//if there is no more expression, simply evaluate the variable
+			if (start > s.size())
+				return help(variable, myMap);
+			string temp = parse(s, start);
+			myMap[variable] = help(temp, myMap);
+		}
+	}
+	else if (word == "add")
+		return help(parse(s, start), myMap) + help(parse(s, start), myMap);
+	else if (word == "mult")
+		return help(parse(s, start), myMap) * help(parse(s, start), myMap);
+}
+/*
+
+You are given a string expression representing a Lisp-like expression to return the integer value of.
+
+*/
+int evaluate(string expression) {
+	unordered_map<string, int> myMap;
+	return help(expression, myMap);
+}
+
+/*
+
+Given an array S of n integers, are there elements a, b, c in S such that a + b + c = 0? Find all unique triplets in the array which gives the sum of zero.
+
+*/
+vector<vector<int>> threeSum(vector<int>& nums) {
+	vector<vector<int> > res;
+
+	std::sort(nums.begin(), nums.end());
+
+	for (int i = 0; i < nums.size(); i++) {
+
+		int target = -nums[i];
+		int front = i + 1;
+		int back = nums.size() - 1;
+
+		while (front < back) {
+
+			int sum = nums[front] + nums[back];
+
+			// Finding answer which start from number num[i]
+			if (sum < target)
+				front++;
+
+			else if (sum > target)
+				back--;
+
+			else {
+				vector<int> triplet(3, 0);
+				triplet[0] = nums[i];
+				triplet[1] = nums[front];
+				triplet[2] = nums[back];
+				res.push_back(triplet);
+
+				// Processing duplicates of Number 2
+				// Rolling the front pointer to the next different number forwards
+				while (front < back && nums[front] == triplet[1]) front++;
+
+				// Processing duplicates of Number 3
+				// Rolling the back pointer to the next different number backwards
+				while (front < back && nums[back] == triplet[2]) back--;
+			}
+
+		}
+
+		// Processing duplicates of Number 1
+		while (i + 1 < nums.size() && nums[i + 1] == nums[i])
+			i++;
+
+	}
+
+	return res;
+}
+
+/*
+
+Given four lists A, B, C, D of integer values, compute how many tuples (i, j, k, l) there are such that A[i] + B[j] + C[k] + D[l] is zero.
+
+To make problem a bit easier, all A, B, C, D have same length of N where 0 ≤ N ≤ 500. All integers are in the range of -228 to 228 - 1 and the result is guaranteed to be at most 231 - 1.
+
+*/
+int fourSumCount(vector<int>& A, vector<int>& B, vector<int>& C, vector<int>& D) {
+	unordered_map<int, int>  abSum;
+	for (auto a : A) {
+		for (auto b : B) {
+			++abSum[a + b];
+		}
+	}
+	int count = 0;
+	for (auto c : C) {
+		for (auto d : D) {
+			auto it = abSum.find(0 - c - d);
+			if (it != abSum.end()) {
+				count += it->second;
+			}
+		}
+	}
+	return count;
+}
+
+/*
+
+Given an array S of n integers, are there elements a, b, c, and d in S such that a + b + c + d = target? Find all unique quadruplets in the array which gives the sum of target.
+
+*/
+vector<vector<int>> fourSum(vector<int>& nums, int target) {
+	vector<vector<int>> total;
+	int n = nums.size();
+	if (n<4)  return total;
+	sort(nums.begin(), nums.end());
+	for (int i = 0; i<n - 3; i++)
+	{
+		if (i>0 && nums[i] == nums[i - 1]) continue;
+		if (nums[i] + nums[i + 1] + nums[i + 2] + nums[i + 3]>target) break;
+		if (nums[i] + nums[n - 3] + nums[n - 2] + nums[n - 1]<target) continue;
+		for (int j = i + 1; j<n - 2; j++)
+		{
+			if (j>i + 1 && nums[j] == nums[j - 1]) continue;
+			if (nums[i] + nums[j] + nums[j + 1] + nums[j + 2]>target) break;
+			if (nums[i] + nums[j] + nums[n - 2] + nums[n - 1]<target) continue;
+			int left = j + 1, right = n - 1;
+			while (left<right) {
+				int sum = nums[left] + nums[right] + nums[i] + nums[j];
+				if (sum<target) left++;
+				else if (sum>target) right--;
+				else {
+					total.push_back(vector<int>{nums[i], nums[j], nums[left], nums[right]});
+					do { left++; } while (nums[left] == nums[left - 1] && left<right);
+					do { right--; } while (nums[right] == nums[right + 1] && left<right);
+				}
+			}
+		}
+	}
+	return total;
+}
+
+/*
+
+Given n non-negative integers representing an elevation map where the width of each bar is 1, compute how much water it is able to trap after raining.
+
+*/
+int trap(vector<int>& height) {
+	int left = 0, right = height.size() - 1;
+	int ans = 0;
+	int left_max = 0, right_max = 0;
+	while (left < right) {
+		if (height[left] < height[right]) {
+			height[left] >= left_max ? (left_max = height[left]) : ans += (left_max - height[left]);
+			++left;
+		}
+		else {
+			height[right] >= right_max ? (right_max = height[right]) : ans += (right_max - height[right]);
+			--right;
+		}
+	}
+	return ans;
+}
+
+/*
+
+Given a linked list, reverse the nodes of a linked list k at a time and return its modified list.
+
+k is a positive integer and is less than or equal to the length of the linked list. If the number of nodes is not a multiple of k then left-out nodes in the end should remain as it is.
+
+You may not alter the values in the nodes, only nodes itself may be changed.
+
+Only constant memory is allowed.
+
+*/
+ListNode* reverseKGroup(ListNode* head, int k) {
+	return NULL;
+}
+
+/*
+
+
+Given a string S, find the number of different non-empty palindromic subsequences in S, and return that number modulo 10^9 + 7.
+
+A subsequence of a string S is obtained by deleting 0 or more characters from S.
+
+A sequence is palindromic if it is equal to the sequence reversed.
+
+Two sequences A_1, A_2, ... and B_1, B_2, ... are different if there is some i for which A_i != B_i.
+
+*/
+int countPalindromicSubsequences(string S) {
+	return 0;
+}
+
+/*
+
+Given a non-empty array of integers, return the k most frequent elements.
+
+*/
+vector<int> topKFrequent(vector<int>& nums, int k) {
+	unordered_map<int, int> mmm;
+	for (int i = 0; i < nums.size(); i++)
+	{
+		mmm[nums[i]]++;
+	}
+	vector<int> back;
+	priority_queue<int> mypq;
+	int min = INT_MAX;
+	for (auto i = mmm.begin(); i != mmm.end(); i++)
+	{
+		mypq.push((*i).second);
+	}
+	for (int i = 0; i < k; i++)
+	{
+		int temp = mypq.top();
+		for (auto j = mmm.begin(); j != mmm.end(); j++)
+		{
+			if (temp == (*j).second)
+			{
+				back.push_back((*j).first);
+				mmm.erase(j);
+				break;
+			}
+		}
+		mypq.pop();
+	}
+	return back;
+}
+
+/*
+
+Write an efficient algorithm that searches for a value in an m x n matrix. This matrix has the following properties:
+
+Integers in each row are sorted in ascending from left to right.
+Integers in each column are sorted in ascending from top to bottom.
+
+*/
+bool searchMatrix(vector<vector<int>>& matrix, int target) {
+	int i;
+	for (i = 0; i < matrix.size(); i++)
+	{
+		if (matrix[i][0] > target)
+			break;
+	}
+	if (i == 0)
+		return false;
+	for (int j = 0; j < i; j++)
+	{
+		for (int k = 0; k < matrix[j].size(); k++)
+		{
+			if (matrix[j][k] == target)
+				return true;
+		}
+	}
+	return false;
+}
+
+/*
+
+Implement a basic calculator to evaluate a simple expression string.
+
+The expression string contains only non-negative integers, +, -, *, / operators and empty spaces . The integer division should truncate toward zero.
+
+You may assume that the given expression is always valid.
+
+*/
+int calculate(string s) {
+	if (s.length() == 0) return 0;
+	stack<int> sss;
+	int num = 0;
+	char sign = '+';
+	for (int i = 0; i<s.length(); i++) {
+		if (isdigit(s[i])) {
+			num = num * 10 + s[i] - '0';
+		}
+		if ((!isdigit(s[i]) && ' ' != s[i]) || i == s.length() - 1) {
+			if (sign == '-') {
+				sss.push(-num);
+			}
+			if (sign == '+') {
+				sss.push(num);
+			}
+			if (sign == '*') {
+				int temp = sss.top();
+				sss.pop();
+				sss.push(temp*num);
+			}
+			if (sign == '/') {
+				int temp = sss.top();
+				sss.pop();
+				sss.push(temp / num);
+			}
+			sign = s[i];
+			num = 0;
+		}
+	}
+
+	int re = 0;
+	while (!sss.empty())
+	{
+		int i = sss.top();
+		re += i;
+		sss.pop();
+	}
+	return re;
+}
+
+/*
+
+Implement a basic calculator to evaluate a simple expression string.
+
+The expression string may contain open ( and closing parentheses ), the plus + or minus sign -, non-negative integers and empty spaces .
+
+You may assume that the given expression is always valid.
+
+*/
+int calculate2(string s) {
+	stack<int> sss;
+	int result = 0;
+	int number = 0;
+	int sign = 1;
+	for (int i = 0; i < s.length(); i++) {
+		char c = s[i];
+		if (isdigit(c)) {
+			number = 10 * number + (int)(c - '0');
+		}
+		else if (c == '+') {
+			result += sign * number;
+			number = 0;
+			sign = 1;
+		}
+		else if (c == '-') {
+			result += sign * number;
+			number = 0;
+			sign = -1;
+		}
+		else if (c == '(') {
+			//we push the result first, then sign;
+			sss.push(result);
+			sss.push(sign);
+			//reset the sign and result for the value in the parenthesis
+			sign = 1;
+			result = 0;
+		}
+		else if (c == ')') {
+			result += sign * number;
+			number = 0;
+			result *= sss.top();//stack.pop() is the sign before the parenthesis
+			sss.pop();
+			result += sss.top();//stack.pop() now is the result calculated before the parenthesis
+			sss.pop();
+		}
+	}
+	if (number != 0) result += sign * number;
+	return result;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4148,9 +5071,7 @@ int maxCount(int m, int n, vector<vector<int>>& ops) {
 
 int main()
 {
-	vector<string> xxx1 = { "Shogun", "Tapioca Express", "Burger King", "KFC"};
-	vector<string> xxx2 = { "KFC", "Shogun", "Burger King" };
-	findRestaurant(xxx1, xxx2);
+	solveNQueens(4);
     return 0;
 }
 
